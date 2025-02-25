@@ -22,3 +22,15 @@ movies_exploded = movies.explode('genres')  # One row per genre per movie
 genre_group = movies_exploded.groupby('genres').agg({'title': 'count'}).rename(columns={'title': 'count'})
 print(genre_group.sort_values(by='count', ascending=False))
 
+#5 Merge movies with ratings
+ratings_summary = ratings.groupby('movieId').agg({'rating': ['mean', 'count', 'sum']})
+ratings_summary.columns = ['average_rating', 'rating_count', 'total_rating']
+ratings_summary.reset_index(inplace=True)
+
+# Merge with movie titles
+movies['movieId'] = pd.to_numeric(movies['id'], errors='coerce')
+movies_ratings = movies.merge(ratings_summary, on='movieId', how='left')
+
+# Display
+movies_ratings[['title', 'average_rating', 'rating_count', 'total_rating']].head()
+
