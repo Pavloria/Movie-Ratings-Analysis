@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns  
 
 
-df = pd.read_csv("C:\\Users\\hshakademie9\\Desktop\\archive\\ratings.csv")
+df = pd.read_csv("archive/ratings.csv")
+
 
 # Die Spalte "timestamp" (Zeitstempel in Sekunden) in ein Datumsformat umwandeln
 df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
