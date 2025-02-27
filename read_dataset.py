@@ -12,26 +12,6 @@ links = pd.read_csv("links.csv")
 links_small = pd.read_csv("links_small.csv")
 ratings = pd.read_csv("ratings.csv")
 
-
-adresse = 'D:\\WORK\\INTO_CODE\\AGILE_Projekt\\Projekte\\PRJ_Movie\\satze\\'
-adresse = 'C:\\Users\\Tetiana\\OneDrive\\Документы\\New folder\\satze\\'
-
-import os
-
-file_path = adresse+'credits.csv'
-if not os.path.exists(file_path):
-    print("Файл не найден! Проверьте путь.")
-
-credits = pd.read_csv(adresse+'credits.csv',low_memory = False) #read_csv_file(adresse+'credits.csv') 
-keywords = pd.read_csv(adresse+'keywords.csv',low_memory = False)
-links_small = pd.read_csv(adresse+'links_small.csv',low_memory = False)
-links = pd.read_csv(adresse+'links.csv',low_memory = False) 
-ratings_small = pd.read_csv(adresse+'ratings_small.csv',low_memory = False)
-ratings = pd.read_csv(adresse+'ratings.csv')
-movies = pd.read_csv(adresse+'movies_metadata.csv',low_memory = False) #read_csv_file(adresse+'movies.csv')
-
-
-
 # TICKET_2: Korrekte Behandlung und Standardisierung der Film- und Bewertungsdaten. Edit by tet.sydorenko 26.02.2025
 def info_datatypes(df_name):
     print('COLUMNS and DATATYPES:\n')
@@ -207,7 +187,8 @@ movies_ratings = movies.merge(ratings_summary, on='movieId', how='left')
 
 # Movie_Ratings Display
 movies_ratings[['title', 'average_rating', 'rating_count', 'total_rating']].head()
-# from Reza
+#8
+#  from Reza
 ### Zusammenhang zwischen Produktionsbudget und durchschnittlicher Bewertung von Filmen
 plt.figure(figsize=(12,7))
 plt.scatter(movies['budget'], movies['vote_average'], alpha=0.7, color='green')
