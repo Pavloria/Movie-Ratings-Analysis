@@ -1,8 +1,12 @@
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import streamlit as st
+import io
 import ast
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 movies = pd.read_csv("movies_metadata.csv", low_memory=False)  # Fix potential DtypeWarning
 ratings_small = pd.read_csv("ratings_small.csv")
@@ -187,6 +191,45 @@ movies_ratings = movies.merge(ratings_summary, on='movieId', how='left')
 
 # Movie_Ratings Display
 movies_ratings[['title', 'average_rating', 'rating_count', 'total_rating']].head()
+
+# 6
+df = pd.read_csv("ratings.csv")
+
+# Die Spalte "timestamp" (Zeitstempel in Sekunden) in ein Datumsformat umwandeln
+df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+
+# Das Jahr aus dem Datum extrahieren und in einer neuen Spalte "year" speichern
+df["year"] = df["timestamp"].dt.year
+df["year"] = df["year"].astype(int)
+
+# Daten filtern: Nur Bewertungen ab dem Jahr 2002 behalten
+df = df[df["year"] >= 2000]
+
+# Daten nach Jahren gruppieren und den Durchschnitt der Bewertungen für jedes Jahr berechnen
+ratings_by_year = df.groupby("year")["rating"].mean().reset_index()
+ratings_by_year["year"] = ratings_by_year["year"].astype(int)
+
+
+
+plt.figure(figsize=(10, 10))
+
+# Ein Liniendiagramm erstellen (Jahr auf der X-Achse, durchschnittliche Bewertung auf der Y-Achse)
+sns.lineplot(x="year", y="rating", data=ratings_by_year, marker="o")
+
+
+plt.title("Durchschnittliche Bewertungen über die Jahre")  
+plt.xlabel("Jahr")  
+plt.ylabel("Durchschnittliche Bewertung")  
+
+plt.xticks(ratings_by_year["year"], rotation=45)
+
+# Gitterlinien aktivieren, um das Diagramm lesbarer zu machen
+plt.grid(True)
+
+# Diagramm anzeigen
+plt.show()
+
+
 #8
 #  from Reza
 ### Zusammenhang zwischen Produktionsbudget und durchschnittlicher Bewertung von Filmen
@@ -262,4 +305,86 @@ plt.title('Streudiagramm: Film-Budget vs. Bewertung')
 plt.xlabel('Budget')
 plt.ylabel('Bewertung')
 plt.show()
+
+# 10 und 11
+# Streamlit App-Überschrift
+st.title("🎬 Filmdaten-Analyse")
+
+# Benutzerfreundliche Navigation
+st.sidebar.header("🔍 Filteroptionen")
+min_votes = st.sidebar.slider("Minimale Stimmenanzahl", 0, 500, 50)
+min_rating = st.sidebar.slider("Minimale Bewertung", 0.0, 10.0, 5.0)
+
+# Jahrzehnte-Filter
+movies_metadata["release_date"] = pd.to_datetime(movies_metadata["release_date"], errors='coerce')
+movies_metadata["year"] = movies_metadata["release_date"].dt.year
+movies_metadata["decade"] = (movies_metadata["year"] // 10) * 10 
+
+decades = sorted(movies_metadata["decade"].dropna().unique().astype(int))
+selected_decade = st.sidebar.selectbox("📅 Wähle ein Jahrzehnt", ["Alle"] + decades)
+
+# Jahr-Filter
+if selected_decade != "Alle":
+    years = sorted(movies_metadata[movies_metadata["decade"] == selected_decade]["year"].dropna().unique().astype(int))
+    selected_year = st.sidebar.selectbox("📆 Wähle ein Jahr", ["Alle"] + years)
+else:
+    selected_year = "Alle"
+
+# Daten filtern
+movies_metadata["vote_average"] = pd.to_numeric(movies_metadata["vote_average"], errors="coerce")
+movies_metadata["vote_count"] = pd.to_numeric(movies_metadata["vote_count"], errors="coerce")
+
+filtered_movies = movies_metadata[(movies_metadata["vote_count"] >= min_votes) & (movies_metadata["vote_average"] >= min_rating)]
+if selected_decade != "Alle":
+    filtered_movies = filtered_movies[filtered_movies["decade"] == selected_decade]
+if selected_year != "Alle":
+    filtered_movies = filtered_movies[filtered_movies["year"] == selected_year]
+
+# Fügen Sie dem movie_filter "Jahrzehnt" hinzu
+filtered_movies["decade"] = (filtered_movies["year"] // 10) * 10
+
+# Anzahl der gefundenen Filme anzeigen
+st.write(f"🎥 **Gefundene Filme:** {len(filtered_movies)}")
+st.dataframe(filtered_movies[["title", "vote_average", "vote_count", "release_date"]].sort_values(by="vote_average", ascending=False))
+
+# Diagramm: Bewertungshäufigkeit
+fig, ax = plt.subplots()
+ax.hist(filtered_movies["vote_average"].dropna(), bins=20, color="skyblue", edgecolor="black")
+ax.set_xlabel("Bewertung")
+ax.set_ylabel("Anzahl der Filme")
+ax.set_title("Verteilung der Bewertungen")
+st.pyplot(fig)
+
+st.write("✅ **Diese Anwendung ist optimiert für alle Endgeräte und ermöglicht eine interaktive Analyse von Filmdaten.**")
+
+
+def export_reports():
+    
+    ratings_by_decade = filtered_movies.groupby("decade")["vote_average"].mean().reset_index()
+    ratings_by_decade["decade"] = ratings_by_decade["decade"].astype(int)
+
+    # PDF
+    pdf_buffer = io.BytesIO()
+    with PdfPages(pdf_buffer) as pdf:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(data=ratings_by_decade, x="decade", y="vote_average", palette="viridis", ax=ax)
+        ax.set_title("Durchschnittliche Bewertungen pro Jahrzehnt")
+        ax.set_xlabel("Jahrzehnt")
+        ax.set_ylabel("Durchschnittliche Bewertung")
+        ax.grid(True)
+        pdf.savefig(fig)  # PDF
+        plt.close(fig)
+
+    pdf_buffer.seek(0)  
+    return pdf_buffer
+
+# Button zum Herunterladen des PDFs
+if st.button("📥 PDF herunterladen"):
+    pdf_data = export_reports()
+    st.download_button(
+        label="📄 Analyse-Bericht herunterladen",
+        data=pdf_data,
+        file_name="analyse_bericht.pdf",
+        mime="application/pdf"
+    )
 
