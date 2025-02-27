@@ -28,7 +28,7 @@ min_rating = st.sidebar.slider("Minimale Bewertung", 0.0, 10.0, 5.0)
 # Jahrzehnte-Filter
 movies_metadata["release_date"] = pd.to_datetime(movies_metadata["release_date"], errors='coerce')
 movies_metadata["year"] = movies_metadata["release_date"].dt.year
-movies_metadata["decade"] = (movies_metadata["year"] // 10) * 10  # 📌 Десятилетие
+movies_metadata["decade"] = (movies_metadata["year"] // 10) * 10  
 
 decades = sorted(movies_metadata["decade"].dropna().unique().astype(int))
 selected_decade = st.sidebar.selectbox("📅 Wähle ein Jahrzehnt", ["Alle"] + decades)
