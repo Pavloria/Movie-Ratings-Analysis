@@ -31,6 +31,6 @@ ratings_summary.reset_index(inplace=True)
 movies['movieId'] = pd.to_numeric(movies['id'], errors='coerce')
 movies_ratings = movies.merge(ratings_summary, on='movieId', how='left')
 
-# Display
+# Movie_Ratings Display
 movies_ratings[['title', 'average_rating', 'rating_count', 'total_rating']].head()
 
