@@ -34,3 +34,5 @@ movies_ratings = movies.merge(ratings_summary, on='movieId', how='left')
 # Movie_Ratings Display
 movies_ratings[['title', 'average_rating', 'rating_count', 'total_rating']].head()
 
+
+
