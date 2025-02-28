@@ -15,6 +15,8 @@ keywords = pd.read_csv("keywords.csv")
 links = pd.read_csv("links.csv")
 links_small = pd.read_csv("links_small.csv")
 ratings = pd.read_csv("ratings.csv")
+movies_genres = pd.read_csv("movies_genres_.csv")
+
 
 # TICKET_2: Korrekte Behandlung und Standardisierung der Film- und Bewertungsdaten. Edit by tet.sydorenko 26.02.2025
 def info_datatypes(df_name):
@@ -567,4 +569,70 @@ if st.button("📥 PDF-Bericht herunterladen"):
         file_name="analyse_bericht.pdf",
         mime="application/pdf"
     )
+### 12
+# Beispiel einer Visualisierung: Verteilung der Filmbewertungen
+def plot_ratings_distribution():
+    plt.figure(figsize=(10, 6))
+    ratings_count = ratings['rating'].value_counts().sort_index()
+    plt.bar(ratings_count.index, ratings_count.values, color='skyblue', label="Anzahl Bewertungen")
+    
+    plt.xlabel('Bewertungswert', fontsize=12)
+    plt.ylabel('Frequenz', fontsize=12)
+    plt.title('Verteilung der Filmbewertungen', fontsize=14)
+    plt.legend(loc='upper right')
+    st.pyplot(plt)
+
+# Beispiel einer Visualisierung: Durchschnittliche Bewertung pro Film
+
+def plot_average_rating_per_movie():
+    avg_ratings = ratings.groupby('movieId')['rating'].mean().sort_values(ascending=False).head(20)
+    
+    plt.figure(figsize=(10, 6))
+    avg_ratings.plot(kind='bar', color='salmon', label="Durchschnittliche Bewertung")
+    
+    plt.xlabel('Movie ID', fontsize=12)
+    plt.ylabel('Durchschnittliche Bewertung', fontsize=12)
+    plt.title('Top 20 Filme nach durchschnittlicher Bewertung', fontsize=14)
+    plt.legend(loc='upper right')
+    st.pyplot(plt)
+
+# Beispiel einer Visualisierung: Filme nach Genre
+def plot_movies_per_genre():
+    genre_count = movies_genres['genre'].str.split('|').explode().value_counts()
+    
+    plt.figure(figsize=(12, 8))
+    genre_count.head(20).plot(kind='bar', color='green', label="Anzahl der Filme")
+    
+    plt.xlabel('Genre', fontsize=12)
+    plt.ylabel('Anzahl der Filme', fontsize=12)
+    plt.title('Top 20 Genres nach Anzahl der Filme', fontsize=14)
+    plt.legend(loc='upper right')
+    st.pyplot(plt)
+
+#Beispiel einer Visualisierung: Filmbudgets vs. Einnahmen
+def plot_budget_vs_revenue():
+    movies_cleaned = movies[['budget', 'revenue']].fillna(0)
+    movies_cleaned['budget'] = pd.to_numeric(movies_cleaned['budget'], errors='coerce')
+    movies_cleaned['revenue'] = pd.to_numeric(movies_cleaned['revenue'], errors='coerce')
+    movies_cleaned['budget_million'] = movies_cleaned['budget'] / 1_000_000
+    movies_cleaned['revenue_million'] = movies_cleaned['revenue'] / 1_000_000
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(movies_cleaned['budget_million'], movies_cleaned['revenue_million'], alpha=0.5, label="Budget vs. Einnahmen")
+    
+    plt.xlabel('Budget (Milionen $)', fontsize=12)
+    plt.ylabel('Revenue (Milionen $)', fontsize=12)
+    plt.title('Budget vs. Einnahmen für Filme', fontsize=14)
+    plt.legend(loc='upper left')
+    st.pyplot(plt)
+
+# Beispiel für die Anzeige der Diagramme in Streamlit
+def display_plots():
+    plot_movies_per_genre()
+    plot_budget_vs_revenue()
+    plot_average_rating_per_movie()
+    plot_ratings_distribution()
+    
+# Calling display_plots function to show in Streamlit
+display_plots()
 
