@@ -15,7 +15,8 @@ The project leverages **pandas** and **NumPy** for data processing and analysis,
 
 Here’s a quick look at the dashboard interface:
 
-*You can include a screenshot or a GIF here if available*
+![image](https://github.com/user-attachments/assets/713c7169-3a68-4bfd-b06a-25ddc4d50ff6)
+
 
 ## Used Technologies
 
